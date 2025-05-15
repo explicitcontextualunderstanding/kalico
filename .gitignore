@@ -2,6 +2,8 @@
 out
 *.so
 *.pyc
+*.png
+*.3mf
 __pycache__/
 .config
 .config.old
