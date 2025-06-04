@@ -52,28 +52,9 @@ max_accel: 3000
 square_corner_velocity: 5.0
 ```
 
-#### CoreXY Printer Example
-
-```ini
-[printer]
-kinematics: corexy
-max_velocity: 250
-max_accel: 2000
-```
-
-#### Delta Printer Example
-
-```ini
-[printer]
-kinematics: delta
-delta_radius: 120
-max_velocity: 150
-max_accel: 1000
-```
-
 #### Common Printer Model Configurations
 
-**Ender 3 (V2/Pro/S1) Example:**
+**Ender 3 S1 Example:**
 
 ```ini
 [printer]
@@ -94,46 +75,6 @@ endstop_pin: ^PA5
 position_endstop: 0
 position_max: 235
 homing_speed: 50
-
-# Additional Ender 3 specific settings...
-```
-
-**Prusa i3 MK3S Example:**
-
-```ini
-[printer]
-kinematics: cartesian
-max_velocity: 300
-max_accel: 1500
-max_z_velocity: 12
-max_z_accel: 200
-
-[stepper_x]
-step_pin: PD0
-dir_pin: !PC0
-enable_pin: !PC3
-microsteps: 16
-rotation_distance: 32
-endstop_pin: ^PC1
-position_endstop: 0
-position_max: 255
-homing_speed: 50
-
-# Additional Prusa specific settings...
-```
-
-**Voron 2.4 Example:**
-
-```ini
-[printer]
-kinematics: corexy
-max_velocity: 500
-max_accel: 10000
-max_z_velocity: 15
-max_z_accel: 350
-square_corner_velocity: 8.0
-
-# Additional Voron specific settings...
 ```
 
 ### Stepper Motors
@@ -244,22 +185,11 @@ gcode:
    EXCLUDE_OBJECT NAME=my_test_cube
    ```
 
+   > **Important:** When printing multiple objects and using the exclude_object feature, set your slicer's "Object Wall Loops" (or equivalent setting) to zero. This prevents perimeter overlaps between separate objects and ensures clean object separation, making it possible to properly exclude individual objects during printing.
+
 5. **Board-Specific Configurations**:
 
-   #### SKR Mini E3 V2 Example
-
-   ```ini
-   [mcu]
-   serial: /dev/serial/by-id/usb-Klipper_stm32f103xe_<your-id>
-   
-   [board_pins]
-   aliases:
-       # Common EXP1 header found on many "all-in-one" boards
-       EXP1_1=PB5, EXP1_3=PA9,   EXP1_5=PA10, EXP1_7=PB8, EXP1_9=<GND>
-       EXP1_2=PA15, EXP1_4=<RST>, EXP1_6=PB9,  EXP1_8=PB15, EXP1_10=<5V>
-   ```
-
-   #### Raspberry Pi as Secondary MCU
+   #### Orange Pi as Secondary MCU
 
    ```ini
    [mcu host]
@@ -297,7 +227,19 @@ gcode:
    SET_RETRACTION RETRACT_LENGTH=1.5 ; Adjust settings on-the-fly
    ```
 
-8. **G-Code Arcs**:
+8. **Flow Calibration**:
+
+   Flow rate calibration (extrusion multiplier) ensures accurate material extrusion. Results from flow calibration tests should be applied in both your slicer settings and can be adjusted on-the-fly in Klipper.
+
+   ```ini
+   [gcode_macro ADJUST_FLOW]
+   gcode:
+      SET_PRESSURE_ADVANCE ADVANCE={params.PA|default(0.02)}
+      SET_EXTRUDER_FACTOR FACTOR={params.FLOW|default(1.0)}
+
+   ```
+
+9. **G-Code Arcs**:
    Enables arc commands for smoother curves.
 
    ```ini
@@ -305,7 +247,7 @@ gcode:
    resolution: 0.1
    ```
 
-9. **Fan Control**:
+10. **Fan Control**:
    Advanced fan control settings.
 
    ```ini
@@ -551,6 +493,7 @@ PID_CALIBRATE HEATER=heater_bed TARGET=60
 ```
 
 Always run `SAVE_CONFIG` after successful PID tuning.
+If using temperature tower, but sure to remove the macro from machine G-code in Orca Slicer to prevent it from running during normal prints.
 
 ### Nozzle Wear and Maintenance
 
@@ -701,6 +644,7 @@ Follow this flowchart to systematically diagnose persistent print issues:
      - Verify MCU processor isn't overheating
      - Add `restart_method: command` to `[mcu]` section
      - Consider a powered USB hub
+   -Set Host IP to: 192.168.1.95:7125 is the default port for Klipper, ensure it's not blocked by firewall or router settings.
 
 8. **Pressure Advance Fine-Tuning**:
 
@@ -728,7 +672,6 @@ Follow this flowchart to systematically diagnose persistent print issues:
       - Use Arc Welder plugin in slicer when possible
 
 #### Summary Table: Common Issues & Solutions
-
 | Issue | Why It Matters | Solution |
 |-------|----------------|----------|
 | Filament-specific tuning | PETG/PLA require different squish | Use material-specific Z-offsets (see table) |
@@ -738,7 +681,82 @@ Follow this flowchart to systematically diagnose persistent print issues:
 | Environmental factors | Drafts/humidity warp prints | Add enclosure and implement filament drying |
 | Backup practices | Inadvertent config overwriting | Always use `SAVE_CONFIG BACKUP=True` |
 
-Following this comprehensive approach will help diagnose and resolve the root cause of persistent nozzle dragging and print detachment issues.
+## Calibration Summary
+
+### 1. Bed Leveling
+```ini
+[bed_mesh]
+mesh_min: 41.8, 49
+mesh_max: 170, 190
+probe_count: 5,5
+
+#*# [bed_mesh default]
+#*# points = 0.102154, 0.027925, ... (auto-saved mesh data)
+```
+
+### 2. Pressure Advance
+```ini
+[extruder]
+pressure_advance: 0.065
+pressure_advance_smooth_time: 0.045
+```
+
+### 3. Input Shaping (ADXL345 Tuning)
+```ini
+[input_shaper]
+shaper_type_x = ei
+shaper_freq_x = 112.6
+shaper_type_y = mzv
+shaper_freq_y = 43.8
+```
+
+### 4. Retraction
+```ini
+[firmware_retraction]
+retract_length: 1.5
+retract_speed: 50
+```
+
+### 5. Flow Rate
+Flow is adjusted in your slicer’s extrusion multiplier (e.g., Orca Slicer profile).
+
+### 6. Z-Offset (CR Touch)
+```ini
+#*# [bltouch]
+#*# z_offset = 2.750
+```
+
+### 7. Axis Twist Compensation
+```ini
+#*# [axis_twist_compensation]
+#*# z_compensations = 0.041250, 0.043750, -0.085000
+#*# compensation_start_x = 10.0
+#*# compensation_end_x = 193.0
+```
+
+### 8. PID Tuning
+```ini
+[extruder]
+pid_Kp: 23.561
+pid_Ki: 1.208
+pid_Kd: 114.859
+
+[heater_bed]
+pid_Kp: 71.867
+pid_Ki: 1.536
+pid_Kd: 840.843
+```
+
+### 9. Resonance Testing
+```ini
+[resonance_tester]
+probe_points: 100,100,20
+```
+
+**Final Notes:**  
+- Auto-saved `#*#` blocks should not be edited manually.  
+- Use `PRESSURE_ADVANCE_TOWER`, `RETRACTION_TEST`, etc., for future calibrations.  
+- Keep `max_accel: 5000` and `square_corner_velocity: 8.0` for stable, shaped motion.
 
 ## Conclusion
 
