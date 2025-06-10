@@ -213,9 +213,9 @@ gcode:
 
    ```ini
    [firmware_retraction]
-   retract_length: 1.0
-   retract_speed: 35
-   unretract_speed: 35
+   retract_length: 1.2
+   retract_speed: 60 
+   unretract_speed: 30
    unretract_extra_length: 0.0
    ```
 
@@ -413,6 +413,8 @@ Different filaments require specific settings for optimal adhesion and print qua
 | ABS/ASA  | -0.02 to +0.05mm    | 100-110°C| 240-255°C       | 0-20%   | Enclosure recommended |
 | Nylon    | +0.05mm             | 70-90°C  | 250-270°C       | 0%      | Dry filament crucial |
 
+If first layer nozzle temperature is less than 205 degrees Celsius, the print may not adhere and get dragged across the bed.
+
 ```gcode
 # Example macro for material-specific adjustments
 [gcode_macro MATERIAL_ADJUST]
@@ -468,18 +470,21 @@ Look for `ot_warn` (overtemperature warning) or high `SG_RESULT` values which in
 Vibrations can cause layer shifts and print detachment:
 
 ```gcode
-# For printers with ADXL345 accelerometer
-ACCELEROMETER_MEASURE CHIP=adxl345 NAME=resonances_x AXIS=X
-ACCELEROMETER_MEASURE CHIP=adxl345 NAME=resonances_y AXIS=Y
+# Using ADXL345 accelerometer with Klippain Shake & Tune
+AXIS_MAP_CALIBRATION # To align the sensor axes with printer axes.
+AXIS_SHAPER_CALIBRATION # To measure both axis. AXIS=Y or X to do one axis at a time.
 ```
 
 Check the generated CSV files for resonance peaks and adjust input shaper accordingly:
 
 ```ini
 [input_shaper]
-shaper_freq_x: 57.8  # Match to your measured resonance
-shaper_freq_y: 39.2
-shaper_type: mzv
+shaper_type_x = ei     # For lower vibrations (smoother prints)
+shaper_freq_x = 75.8   # Higher frequency for EI shaper 
+shaper_type_y = ei
+shaper_freq_y = 52.8
+damping_ratio_x: 0.098
+damping_ratio_y: 0.055
 ```
 
 #### Temperature Stability Testing
@@ -550,7 +555,7 @@ A misaligned gantry causes inconsistent Z-height across the bed, leading to part
    ```
 
 3. **Belt Tension Verification**:
-   - Use a belt tension meter or audio frequency test (free apps available)
+   - Use a belt tension meter or audio frequency test (free apps available). Y-axis is 82Hz.
    - X/Y belts should have similar tension (~140-160Hz for GT2 belts)
 
 4. **Frame Rigidity Test**:
@@ -719,6 +724,7 @@ retract_speed: 50
 
 ### 5. Flow Rate
 Flow is adjusted in your slicer’s extrusion multiplier (e.g., Orca Slicer profile).
+On May 16, 2025 the flow rate was estimated to be between 1.15 and 1.20 for PLA. Subsequent hollow cube calibrations show it at 0.92.
 
 ### 6. Z-Offset (CR Touch)
 ```ini
