@@ -38,6 +38,9 @@ For new users, start with:
 
 ## Configuration Options
 
+### Orca Slicer Configuration
+Ensure MacOS privacy & security > local network has Orca Slicer enabled to allow it to communicate with Klipper.  Fluidd using moonraker API and is on port 7125.
+
 ### Printer Setup
 
 Defines the printer's kinematics, motion limits, and basic parameters.
@@ -88,11 +91,17 @@ Example for X-axis stepper:
 step_pin: PE0
 dir_pin: PB0
 enable_pin: !PC3
-rotation_distance: 40.0
+rotation_distance: 39.97 #Tested with 50mm XYZ Accuracy Test
 microsteps: 16
 endstop_pin: ^PA0
 position_endstop: 0
 position_max: 235
+
+[stepper_y]
+rotation_distance: 39.86 #Tested with 50mm XYZ Accuracy Test
+
+[stepper_z]
+rotation_distance: 8.06 #Tested with 50mm XYZ Accuracy Test
 ```
 
 ### Extruder Configuration
@@ -106,8 +115,8 @@ Example:
 step_pin: PD6
 dir_pin: PD7
 enable_pin: !PB9
-rotation_distance: 33.500
-
+gear_ratio: 42:12
+rotation_distance: 25.46 #Confirmed with 0.01mm calipers and 100mm extrusion test
 heater_pin: PB5
 sensor_type: EPCOS 100K B57560G104F
 sensor_pin: PA0
