@@ -738,7 +738,7 @@ On May 16, 2025 the flow rate was estimated to be between 1.15 and 1.20 for PLA.
 ### 6. Z-Offset (CR Touch)
 ```ini
 #*# [bltouch]
-#*# z_offset = 2.750
+#*# z_offset = 2.939
 ```
 
 ### 7. Axis Twist Compensation
