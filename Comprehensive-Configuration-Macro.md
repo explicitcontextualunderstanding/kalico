@@ -73,7 +73,7 @@ step_pin: PC2
 dir_pin: PB9
 enable_pin: !PC3
 microsteps: 16
-rotation_distance: 40
+rotation_distance: 40.25 #Finally confirmed with 20.00mm calibration cube
 endstop_pin: ^PA5
 position_endstop: 0
 position_max: 235
@@ -141,7 +141,7 @@ speed: 120             # Speed of probing moves.
 horizontal_move_z: 5   # Z height during probing.
 mesh_min: 35,6         # Minimum X,Y coordinate.
 mesh_max: 240,198      # Maximum X,Y coordinate.
-probe_count: 5,5       # Points to probe (X,Y).
+probe_count: 9,9       # Points to probe (X,Y).  Increase for finer mesh.
 fade_start: 1.0        # Z height to start fading out compensation.
 fade_end: 10.0         # Z height to complete fade out.
 ```
@@ -738,7 +738,7 @@ On May 16, 2025 the flow rate was estimated to be between 1.15 and 1.20 for PLA.
 ### 6. Z-Offset (CR Touch)
 ```ini
 #*# [bltouch]
-#*# z_offset = 2.939
+#*# z_offset = 2.909 #Dial in Z-offset for first layer calibration
 ```
 
 ### 7. Axis Twist Compensation
