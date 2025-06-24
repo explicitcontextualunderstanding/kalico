@@ -238,8 +238,8 @@ gcode:
 
 8. **Flow Calibration**:
 
-   Flow rate calibration (extrusion multiplier) ensures accurate material extrusion. Results from flow calibration tests should be applied in both your slicer settings and can be adjusted on-the-fly in Klipper.
-
+   Flow rate calibration (extrusion multiplier) ensures accurate material extrusion. Results from flow calibration tests should be applied in both your slicer settings and can be adjusted on-the-fly in Klipper.  Max Volumetric speed is set to 13mm³/s for PLA, based on a calibration print that showed artifacts at 15.
+   
    ```ini
    [gcode_macro ADJUST_FLOW]
    gcode:
